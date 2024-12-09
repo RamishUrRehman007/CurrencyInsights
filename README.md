@@ -1,6 +1,6 @@
 # CurrencyInsights
 
-**Note**: I have also uploaded a video for Project Setup and System Demo [https://drive.google.com/file/d/1n0Vts2JvijjkDr7PpaR4QXgMH_xbKeID/view?usp=sharing]. Feel free to watch if you encounter any issues. For additional assistance, you can contact me at ramish534@outlook.com.
+**Note**: I have also uploaded a video for Project Setup and System Demo [https://drive.google.com/file/d/1Rp4KCP4Lm3oD8N5KImtEHytexJ48LomU/view?usp=sharing]. Feel free to watch if you encounter any issues. For additional assistance, you can contact me at ramish534@outlook.com.
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python)
 ![AWS Lambda](https://img.shields.io/badge/AWS%20Lambda-FF9900?style=for-the-badge&logo=awslambda)
