@@ -68,11 +68,11 @@ Resources:
             TableName: "CurrencyInsights-CurrencyData"
     DependsOn: CurrencyDataTable
 
-#  InvokeSyncExchangeRatesImmediately:
-#    Type: Custom::InvokeLambdaImmediately
-#    Properties:
-#      ServiceToken: !GetAtt SyncExchangeRatesFunction.Arn
-#      Action: "invoke"
+  InvokeSyncExchangeRatesImmediately:
+    Type: Custom::InvokeLambdaImmediately
+    Properties:
+      ServiceToken: !GetAtt SyncExchangeRatesFunction.Arn
+      Action: "invoke"
 
   PublicApi:
     Type: AWS::Serverless::Api

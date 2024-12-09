@@ -2,12 +2,46 @@ from currency_insights_response import CurrencyInsightsResponse
 from datetime import datetime, timedelta
 from service_lookup import ServiceLookup
 import decimal
+import urllib3
+import json
+
+
+def send_cfn_response(event, context, response_status, response_data):
+    """
+    Sends a response to the CloudFormation custom resource to signal success or failure.
+    """
+    response_body = {
+        'Status': response_status,
+        'Reason': f'See the details in CloudWatch Log Stream: {context.log_stream_name}',
+        'PhysicalResourceId': context.log_stream_name,
+        'StackId': event['StackId'],
+        'RequestId': event['RequestId'],
+        'LogicalResourceId': event['LogicalResourceId'],
+        'Data': response_data,
+    }
+    response_url = event['ResponseURL']
+    http = urllib3.PoolManager()
+    http.request('PUT', response_url, body=json.dumps(response_body))
+    print(f"Response sent to CFN: {response_body}")
+
 
 def lambda_handler(event, context):
     print(f'Event received: {event}')
     current_date = datetime.now().strftime("%Y-%m-%d")
     previous_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     service_lookup = ServiceLookup()
+
+    # Handle CloudFormation Custom Resource Events
+    if 'RequestType' in event:
+        try:
+            SyncExchangeRatesHandler(service_lookup.data_service).sync_exchange_rates(current_date, previous_date)
+            # Signal success to CloudFormation
+            send_cfn_response(event, context, 'SUCCESS', {'Message': 'Exchange rates synced successfully'})
+        except Exception as e:
+            print(f"Error: {e}")
+            send_cfn_response(event, context, 'FAILED', {'Error': str(e)})
+        return  # Return immediately to avoid further execution for CFN
+
     return SyncExchangeRatesHandler(service_lookup.data_service).sync_exchange_rates(current_date, previous_date)
 
 
