@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  ApiGwTimeout:
+    Type: Number
+    Default: 45
+    Description: Timeout for functions that are serving API Gateway
+Outputs:
+  ApiUrl:
+    Description: "URL of the API Gateway"
+    Value: !Sub "https://${PublicApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+    Export:
+      Name: "CurrencyInsightsApiUrl"
+Resources:
+  CoreLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: core-layer
+      ContentUri: python
+      CompatibleRuntimes:
+        - python3.11
+    Metadata:
+      BuildMethod: python3.11
+
+  GetCurrencyExchangeRatesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "CurrencyInsights-GetCurrentExchangeRates"
+      CodeUri: getCurrentExchangeRates
+      Handler: get_current_exchange_rates.lambda_handler
+      Runtime: python3.11
+      MemorySize: 512
+      Timeout: !Ref ApiGwTimeout
+      Layers:
+        - !Ref CoreLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: "CurrencyInsights-CurrencyData"
+
+  GetCurrencyExchangeRatesFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetCurrencyExchangeRatesFunction
+      Principal: apigateway.amazonaws.com
+
+  SyncExchangeRatesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "CurrencyInsights-SyncExchangeRates"
+      CodeUri: syncExchangeRates
+      Handler: sync_exchange_rates.lambda_handler
+      Runtime: python3.11
+      Timeout: 600
+      MemorySize: 512
+      Events:
+        CronEvent:
+          Type: Schedule
+          Properties:
+            Name: Daily5PMUTC
+            Description: Triggers Lambda Every Day at 5:00 PM UTC
+            Schedule: "cron(0 17 * * ? *)"
+            Enabled: True
+      Layers:
+        - !Ref CoreLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: "CurrencyInsights-CurrencyData"
+    DependsOn: CurrencyDataTable
+
+#  InvokeSyncExchangeRatesImmediately:
+#    Type: Custom::InvokeLambdaImmediately
+#    Properties:
+#      ServiceToken: !GetAtt SyncExchangeRatesFunction.Arn
+#      Action: "invoke"
+
+  PublicApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: "CurrencyInsights-public-api"
+      StageName: "prod"
+      TracingEnabled: True
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: public-api-def.yaml
+
+  CurrencyDataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "CurrencyInsights-CurrencyData"
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: True
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: currency_code
+          AttributeType: S
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: currency_code
+          KeyType: HASH
+        - AttributeName: date
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: DateIndex
+          KeySchema:
+            - AttributeName: date
+              KeyType: HASH
+            - AttributeName: currency_code
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL

@@ -1,0 +1,10 @@
+ version=0.1
+ [default.global.parameters]
+ stack_name = "CurrencyInsightsStack"
+ parameter_overrides=["EnvironmentName=prod"]
+# region = "us-west-1"
+
+ [default.deploy.parameters]
+ template_file = ".aws-sam/build/template.yaml"
+ resolve_s3 = true
+ capabilities = "CAPABILITY_IAM"

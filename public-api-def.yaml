@@ -1,0 +1,18 @@
+openapi: 3.0.1
+info:
+  title: Currency Insights API
+  version: 1.0.0
+paths:
+  /v1/currentExchangeRates:
+    get:
+      tags: ["Core"]
+      summary: Get current exchange rates
+      operationId: getCurrentExchangeRates
+      responses:
+        200:
+          description: Successful response
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CurrencyInsights-GetCurrentExchangeRates/invocations"

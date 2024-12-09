@@ -1,0 +1,5 @@
+FROM public.ecr.aws/sam/build-python3.11:latest
+MAINTAINER Ramish R <ramish534@outlook.com>
+
+RUN pip3 install --upgrade setuptools && pip3 install --upgrade pip \
+    && pip3 install --upgrade aws-sam-cli

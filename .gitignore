@@ -1,0 +1,14 @@
+# Editors
+.vscode/
+.idea/
+
+# Vagrant
+.vagrant/
+
+local/
+test-env
+report.xml
+
+*.iml
+.pytest_cache
+.aws-sam
