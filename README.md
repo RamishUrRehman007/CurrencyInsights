@@ -96,7 +96,9 @@ sam deploy --config-file ./prod-config.toml
 ## 🌐 Accessing the Application
 
 You will get the URL as an output in the terminal Or AWS Console Cloudformation Stack Output. 
-Copy that, add the suffix /v1/currentExchangeRate, and access it in the browser. You will see the data because we are already invoking the SyncExchangeRates Lambda function during a fresh deployment. This ensures that the data is available in DynamoDB.
+Copy that, add the suffix "v1/currentExchangeRates", and access it in the browser. You will see the data because we are already invoking the SyncExchangeRates Lambda function during a fresh deployment. This ensures that the data is available in DynamoDB.
+
+Example URL: "https://dup06m7qv7.execute-api.eu-west-2.amazonaws.com/prod/v1/currentExchangeRates"
 
 ![Deployed](images/deployed.PNG)
 
