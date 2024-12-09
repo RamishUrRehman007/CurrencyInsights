@@ -62,7 +62,7 @@ class SyncExchangeRatesHandler:
                     date=current_date,
                     rate=rate['@rate'],
                     previous_day_rate=previous_rate,
-                    rate_change=abs(previous_rate-decimal.Decimal(rate['@rate'])),
+                    rate_change=abs(previous_rate-decimal.Decimal(rate['@rate'])) if previous_rate != 0 else 0,
                 )
                 new_data = self.data_service.get_currency_data(currency_code=rate['@currency'], date=current_date)
                 print(f"New Data: {new_data}")
